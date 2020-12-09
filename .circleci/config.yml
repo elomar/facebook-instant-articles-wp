@@ -28,6 +28,38 @@ references:
       - run: ./vendor/bin/phpunit
 
 jobs:
+  php5.6-singlesite:
+    docker:
+      - image: circleci/php:5.6
+      - image: circleci/mysql:5.7
+    environment:
+      WP_MULTISITE=0
+    <<: *phpunit_steps
+
+  php5.6-multisite:
+    docker:
+      - image: circleci/php:5.6
+      - image: circleci/mysql:5.7
+    environment:
+      WP_MULTISITE=1
+    <<: *phpunit_steps
+
+  php7.0-singlesite:
+    docker:
+      - image: circleci/php:7.0
+      - image: circleci/mysql:5.7
+    environment:
+      WP_MULTISITE=0
+    <<: *phpunit_steps
+
+  php7.0-multisite:
+    docker:
+      - image: circleci/php:7.0
+      - image: circleci/mysql:5.7
+    environment:
+      WP_MULTISITE=1
+    <<: *phpunit_steps
+
   php7.3-singlesite:
     docker:
       - image: circleci/php:7.3
@@ -48,5 +80,9 @@ workflows:
   version: 2
   test:
     jobs:
+      - php5.6-singlesite
+      - php5.6-multisite
+      - php7.0-singlesite
+      - php7.0-multisite
       - php7.3-singlesite
       - php7.3-multisite
