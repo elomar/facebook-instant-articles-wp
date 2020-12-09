@@ -1,44 +1,35 @@
-# PHP CircleCI 2.0 configuration file
-#
-# Check https://circleci.com/docs/2.0/language-php/ for more details
-#
 version: 2
-jobs:
-  build:
+
+references:
+  setup_mysql: &setup_mysql
+
+  setup_dependencies: &setup_dependencies
+
+  phpunit_job: &phpunit_job
     docker:
-      # Specify the version you desire here
       - image: circleci/php:7.3
-
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # Using the RAM variation mitigates I/O contention
-      # for database intensive operations.
       - image: circleci/mysql:5.7
-    env:
-      WP_VERSION: latest
-      WP_MULTISITE: 1
-
     steps:
       - checkout
 
-      # Download and cache dependencies
+      - run: sudo apt-get update
+      - run: sudo apt-get install subversion default-mysql-client
+      - run: sudo docker-php-ext-install mysqli
+
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "composer.lock" }}
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
-
       - run: composer install --prefer-source --no-interaction
-
       - save_cache:
           key: v1-dependencies-{{ checksum "composer.lock" }}
           paths:
             - ./vendor
-
-      - run: sudo apt-get update
-      - run: sudo apt-get install subversion default-mysql-client
       - run: bash bin/install-wp-tests.sh wordpress_test root '' 127.0.0.1 $WP_VERSION
-      - run: sudo docker-php-ext-install mysqli
+
       - run: ./vendor/bin/phpunit
-      
+
+jobs:
+  build:
+    <<: *phpunit_job
