@@ -12,55 +12,34 @@ references:
       - run: sudo apt-get update
       - run: sudo apt-get install subversion default-mysql-client
       - run: sudo docker-php-ext-install mysqli
+
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "composer.lock" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
       - run: composer install --prefer-source --no-interaction
+      - save_cache:
+          key: v1-dependencies-{{ checksum "composer.lock" }}
+          paths:
+            - ./vendor
+
       - run: bash bin/install-wp-tests.sh wordpress_test root '' 127.0.0.1 $WP_VERSION
 
       - run: ./vendor/bin/phpunit
 
 jobs:
-  php5.6-singlesite:
+  php7.4-singlesite:
     docker:
-      - image: circleci/php:5.6
+      - image: circleci/php:7.4
       - image: circleci/mysql:5.7
     environment:
       WP_MULTISITE=0
     <<: *phpunit_steps
 
-  php5.6-multisite:
+  php7.4-multisite:
     docker:
-      - image: circleci/php:5.6
-      - image: circleci/mysql:5.7
-    environment:
-      WP_MULTISITE=1
-    <<: *phpunit_steps
-
-  php7.0-singlesite:
-    docker:
-      - image: circleci/php:7.0
-      - image: circleci/mysql:5.7
-    environment:
-      WP_MULTISITE=0
-    <<: *phpunit_steps
-
-  php7.0-multisite:
-    docker:
-      - image: circleci/php:7.0
-      - image: circleci/mysql:5.7
-    environment:
-      WP_MULTISITE=1
-    <<: *phpunit_steps
-
-  php7.3-singlesite:
-    docker:
-      - image: circleci/php:7.3
-      - image: circleci/mysql:5.7
-    environment:
-      WP_MULTISITE=0
-    <<: *phpunit_steps
-
-  php7.3-multisite:
-    docker:
-      - image: circleci/php:7.3
+      - image: circleci/php:7.4
       - image: circleci/mysql:5.7
     environment:
       WP_MULTISITE=1
@@ -70,9 +49,5 @@ workflows:
   version: 2
   test:
     jobs:
-      - php5.6-singlesite
-      - php5.6-multisite
-      - php7.0-singlesite
-      - php7.0-multisite
-      - php7.3-singlesite
-      - php7.3-multisite
+      - php7.4-singlesite
+      - php7.4-multisite
