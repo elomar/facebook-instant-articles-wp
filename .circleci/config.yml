@@ -5,10 +5,7 @@ references:
 
   setup_dependencies: &setup_dependencies
 
-  phpunit_job: &phpunit_job
-    docker:
-      - image: circleci/php:7.3
-      - image: circleci/mysql:5.7
+  phpunit_steps: &phpunit_steps
     steps:
       - checkout
 
@@ -31,5 +28,14 @@ references:
       - run: ./vendor/bin/phpunit
 
 jobs:
-  build:
-    <<: *phpunit_job
+  php7.3-singlesite:
+    docker:
+      - image: circleci/php:7.3
+      - image: circleci/mysql:5.7
+    <<: *phpunit_steps
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - php7.3-singlesite
