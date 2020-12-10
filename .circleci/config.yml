@@ -26,8 +26,7 @@ references:
 
       - run: bash bin/install-wp-tests.sh wordpress_test root '' 127.0.0.1 $WP_VERSION
 
-      - run: WP_MULTISITE=0 ./vendor/bin/phpunit
-      - run: WP_MULTISITE=1 ./vendor/bin/phpunit
+      - run: ./vendor/bin/phpunit
 
 jobs:
   php7.4-singlesite:
@@ -38,8 +37,17 @@ jobs:
       WP_MULTISITE=0
     <<: *phpunit_steps
 
+  php7.4-multisite:
+    docker:
+      - image: circleci/php:7.4
+      - image: circleci/mysql:5.7
+    environment:
+      WP_MULTISITE=1
+    <<: *phpunit_steps
+
 workflows:
   version: 2
   test:
     jobs:
       - php7.4-singlesite
+      - php7.4-multisite
